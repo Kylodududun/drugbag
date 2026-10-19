@@ -94,6 +94,16 @@ button:focus-visible,.chip:focus-visible{outline:2px solid var(--rx);outline-off
 #qr img,#qr canvas{width:106px!important;height:106px!important}
 .note{font-size:12.5px;color:var(--ink2)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.free{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.free textarea{width:100%;min-height:72px;border:1px solid var(--line);border-radius:10px;padding:10px;font:15px var(--f-latin);background:var(--paper);color:var(--ink);resize:vertical}
+.free textarea:focus-visible{outline:2px solid var(--rx);outline-offset:1px}
+.ex{display:flex;flex-wrap:wrap;gap:6px}
+.ex button{border:1px dashed var(--line);background:transparent;color:var(--ink2);border-radius:999px;padding:4px 10px;font:12.5px var(--f-latin);cursor:pointer;text-align:left}
+.tri{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13.5px}
+.tri dt{color:var(--ink2)} .tri dd{margin:0;min-width:0}
+.conf{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px}
+.conf.h{background:var(--rx-soft);color:var(--rx)} .conf.m{background:var(--amber-soft);color:var(--amber)} .conf.l{background:var(--alert-soft);color:var(--alert)}
+mark{background:var(--amber-soft);color:inherit;border-radius:3px;padding:0 2px}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 </style>
 </head>
@@ -178,15 +188,15 @@ const T = {
   id:{who:"Untuk: Nenek Wang ○○ · 3 obat",tabs:["Obat","Jadwal hari ini","Bantuan"],
       times:["Pagi","Siang","Malam","Sblm tidur"],after:"Sesudah makan",side:"Efek samping umum",warn:"Segera hubungi jika ada",tip:"Catatan",
       read:"Dengarkan",given:"Sudah diberikan",givenAt:"Diberikan",helpQ:"Apa yang terjadi?",sent:"Pesan ini dikirim ke keluarga & apotek dalam bahasa Mandarin:",
-      copy:"Salin pesan",copied:"Tersalin",em:"Bahaya! Segera bawa ke rumah sakit atau telepon 119.",noVoice:"Suara bahasa ini tidak tersedia di perangkat ini."},
+      copy:"Salin pesan",copied:"Tersalin",em:"Bahaya! Segera bawa ke rumah sakit atau telepon 119.",noVoice:"Suara bahasa ini tidak tersedia di perangkat ini.",freeQ:"Atau tulis keadaan dengan kata-kata Anda sendiri",freePh:"Contoh: Nenek muntah dua kali setelah minum obat",analyze:"Kirim",ex:["Nenek muntah dua kali setelah minum obat","Kakek jatuh di kamar mandi, kepalanya berdarah","Obat gula hampir habis","Saya lupa kasih obat pagi"]},
   vi:{who:"Cho: Bà Vương ○○ · 3 loại thuốc",tabs:["Thuốc","Lịch hôm nay","Trợ giúp"],
       times:["Sáng","Trưa","Tối","Trước ngủ"],after:"Sau ăn",side:"Tác dụng phụ thường gặp",warn:"Liên hệ ngay nếu có",tip:"Lưu ý",
       read:"Nghe đọc",given:"Đã cho uống",givenAt:"Đã cho",helpQ:"Có chuyện gì?",sent:"Tin nhắn này được gửi cho gia đình & nhà thuốc bằng tiếng Trung:",
-      copy:"Sao chép",copied:"Đã chép",em:"Nguy hiểm! Đưa đi bệnh viện ngay hoặc gọi 119.",noVoice:"Thiết bị này không có giọng đọc cho ngôn ngữ này."},
+      copy:"Sao chép",copied:"Đã chép",em:"Nguy hiểm! Đưa đi bệnh viện ngay hoặc gọi 119.",noVoice:"Thiết bị này không có giọng đọc cho ngôn ngữ này.",freeQ:"Hoặc viết tình trạng bằng lời của bạn",freePh:"Ví dụ: Bà bị nôn sau khi uống thuốc",analyze:"Gửi",ex:["Bà bị nôn hai lần sau khi uống thuốc","Ông bị ngã trong nhà tắm","thuoc tieu duong sap het","Toi quen cho ba uong thuoc sang"]},
   zh:{who:"服藥者：王○○ 阿嬤・共 3 種藥",tabs:["用藥卡","今日給藥","求助"],
       times:["早上","中午","晚上","睡前"],after:"飯後",side:"常見副作用",warn:"出現以下情況請立即聯絡",tip:"注意事項",
       read:"朗讀",given:"已給藥",givenAt:"已給藥",helpQ:"發生什麼事？",sent:"系統會以中文傳給家屬與藥局：",
-      copy:"複製訊息",copied:"已複製",em:"危險！請立刻就醫或撥打 119。",noVoice:"此裝置沒有這個語言的語音。"}
+      copy:"複製訊息",copied:"已複製",em:"危險！請立刻就醫或撥打 119。",noVoice:"此裝置沒有這個語言的語音。",freeQ:"或用自己的話描述狀況",freePh:"例如：阿嬤吃完藥吐了兩次",analyze:"送出",ex:["阿嬤吃完藥吐了兩次","阿公在浴室跌倒，頭流血","降血糖的藥快吃完了","早上忘記給藥"]}
 };
 const DRUGS = [
   {id:"aml",name:"Amlodipine",dose:"5 mg・1 tablet",zh:"脈優類降血壓藥",slots:[1,0,0,0],pill:{w:22,h:22,r:"50%",c:"--pill-a"},
@@ -217,7 +227,33 @@ const HELP = [
   {k:"refuse",zh:"長輩不肯吃藥",id:"Nenek tidak mau minum obat",vi:"Bà không chịu uống thuốc"},
   {k:"out",zh:"藥快吃完了",id:"Obat hampir habis",vi:"Thuốc sắp hết"}
 ];
-const S = {role:"caregiver",lang:"id",tab:"card",given:{},alerts:[],help:null,plang:"id"};
+const TRIAGE = [
+  {k:"emerg",zh:"意識不清、呼吸困難或胸痛",red:1,w:["pingsan","tidak sadar","sesak napas","sesak nafas","susah napas","nyeri dada","sakit dada","kejang","ngat","bat tinh","kho tho","dau nguc","co giat","昏倒","昏迷","叫不醒","喘不過氣","呼吸困難","胸痛","抽筋","抽搐"]},
+  {k:"black",zh:"出血、解黑便或血便",red:1,w:["darah","berdarah","bab hitam","tinja hitam","muntah darah","chay mau","ra mau","co mau","phan den","non ra mau","流血","出血","黑便","血便","吐血"]},
+  {k:"fall",zh:"跌倒",red:1,w:["jatuh","terjatuh","terpeleset","nga","bi nga","跌倒","摔倒","滑倒"]},
+  {k:"vomit",zh:"嘔吐",w:["muntah","mual","non","bi non","buon non","吐","嘔吐","想吐","噁心"]},
+  {k:"diarr",zh:"腹瀉",w:["diare","mencret","bab cair","tieu chay","di ngoai nhieu","腹瀉","拉肚子"]},
+  {k:"dizzy",zh:"頭暈",w:["pusing","kepala berputar","puyeng","chong mat","choang","頭暈","暈"]},
+  {k:"extra",zh:"可能多給了藥",w:["kelebihan","obat dua kali","minum dua kali","terlanjur","salah minum","salah obat","uong them","uong hai lan","uong nham","多給","多吃","吃兩次","吃錯"]},
+  {k:"miss",zh:"忘記給藥",w:["lupa","belum minum","belum kasih","quen","chua uong","忘記","忘了","沒給"]},
+  {k:"refuse",zh:"長輩不肯吃藥",w:["tidak mau","menolak","nggak mau","khong chiu","tu choi","không chịu","不肯","不吃","不要吃"]},
+  {k:"out",zh:"藥快吃完了",w:["habis","hampir habis","het thuoc","sap het","het","吃完","快沒","沒藥"]}
+];
+function norm(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/[^a-z0-9\u4e00-\u9fff ]/g," ").replace(/\s+/g," ").trim()}
+function lev(a,b){if(Math.abs(a.length-b.length)>1)return 9;const m=[...Array(a.length+1)].map((_,i)=>[i]);for(let j=1;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function triage(text){
+  const n=" "+norm(text)+" ",toks=norm(text).split(" ");
+  const res=TRIAGE.map(c=>{let sc=0,hits=[];for(const w of c.w){const nw=norm(w);if(!nw)continue;
+    const cjk=/[\u4e00-\u9fff]/.test(nw);
+    if(cjk?n.includes(nw):n.includes(" "+nw+" ")){sc+=nw.includes(" ")?2:1.5;hits.push(w);continue}
+    if(!cjk&&!nw.includes(" ")&&nw.length>=5&&toks.some(t=>lev(t,nw)===1)){sc+=0.8;hits.push(w+"≈")}}
+    return {c,sc,hits}}).filter(r=>r.sc>0).sort((a,b)=>(b.c.red||0)-(a.c.red||0)||b.sc-a.sc);
+  if(!res.length)return {top:null,conf:"l",all:[]};
+  const top=res[0];const exact=top.hits.some(h=>!h.endsWith("≈"));
+  const close=res[1]&&!res[1].c.red&&!top.c.red&&res[1].sc>=top.sc;
+  return {top,conf:exact&&!close?"h":"m",all:res};
+}
+const S = {role:"caregiver",lang:"id",tab:"card",given:{},alerts:[],help:null,plang:"id",ftext:"",tri:null};
 try{const l=localStorage.getItem("pl-lang"); if(l&&T[l]) S.lang=l;}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -273,12 +309,32 @@ function renderHelp(){
       <div class="note lat">${esc(t.sent)}</div><div class="bubble" id="h-msg">${esc(m)}</div>
       <div class="row"><button class="btn pri" id="h-copy">${esc(t.copy)}</button></div>
       <div class="note">示範藥局電話：02-0000-0000（虛構）</div></div>`;}
-  $("p-help").innerHTML=`<div class="k lat">${esc(t.helpQ)}</div><div class="help">${HELP.map(h=>`<button class="${h.red?"red":""}" data-help="${h.k}" aria-pressed="${S.help===h.k}">${esc(lab(h))}</button>`).join("")}</div>${out}`;
+  let tri="";
+  if(S.tri){const r=S.tri;const top=r.top;const red=top&&top.c.red;
+    const confTxt={h:"高",m:"中",l:"低"}[r.conf];
+    const msg=freeMsg(S.ftext,r);
+    tri=`<div class="out" aria-live="polite">${red?`<div class="em lat">${esc(t.em)}</div>`:""}
+      <div class="k">AI 分流結果（藥師端可見）</div>
+      <dl class="tri"><dt>判斷類別</dt><dd>${top?esc(top.c.zh):"無法判斷"}</dd>
+      <dt>信心程度</dt><dd><span class="conf ${r.conf}">${confTxt}</span>${r.conf==="l"?"　已轉藥師人工判讀":""}</dd>
+      <dt>比對依據</dt><dd class="lat">${top?top.hits.map(h=>`<mark>${esc(h)}</mark>`).join(" "):"—"}</dd>
+      ${r.all.length>1?`<dt>其他可能</dt><dd>${r.all.slice(1,3).map(x=>esc(x.c.zh)).join("、")}</dd>`:""}</dl>
+      <div class="note lat">${esc(t.sent)}</div><div class="bubble" id="f-msg">${esc(msg)}</div>
+      <div class="note">示範版以多語詞庫與拼寫容錯比對模擬分類流程；正式版將以語言模型分類，並維持「高風險一律提示就醫、低信心轉人工」的規則。</div></div>`;}
+  $("p-help").innerHTML=`<div class="k lat">${esc(t.helpQ)}</div><div class="help">${HELP.map(h=>`<button class="${h.red?"red":""}" data-help="${h.k}" aria-pressed="${S.help===h.k}">${esc(lab(h))}</button>`).join("")}</div>${out}
+    <div class="free"><label class="k lat" for="h-free">${esc(t.freeQ)}</label>
+      <textarea id="h-free" class="lat" placeholder="${esc(t.freePh)}">${esc(S.ftext)}</textarea>
+      <div class="ex">${t.ex.map(e=>`<button data-ex="${esc(e)}">${esc(e)}</button>`).join("")}</div>
+      <div class="row"><button class="btn pri" id="h-go">${esc(t.analyze)}</button></div></div>${tri}`;
   $("p-help").querySelectorAll("[data-help]").forEach(b=>b.onclick=()=>{S.help=b.dataset.help;const h=HELP.find(x=>x.k===S.help);S.alerts.unshift({t:now(),h});renderHelp();renderFamily()});
+  $("p-help").querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{$("h-free").value=b.dataset.ex});
+  $("h-go").onclick=()=>{const v=$("h-free").value.trim();if(!v)return;S.ftext=v;S.tri=triage(v);S.help=null;
+    const top=S.tri.top;S.alerts.unshift({t:now(),h:{zh:(top?top.c.zh:"無法判斷，待藥師判讀")+"（自由描述）",red:top&&top.c.red}});renderHelp();renderFamily()};
   const c=$("h-copy"); if(c) c.onclick=()=>{const txt=$("h-msg").textContent;
     const done=()=>{c.textContent=T[S.lang].copied};
     try{navigator.clipboard.writeText(txt).then(done,()=>selectText($("h-msg")))}catch(e){selectText($("h-msg"))}};
 }
+function freeMsg(text,r){const top=r.top;return `【用藥求助・自由描述】${now()}\n服藥者：王○○ 阿嬤\n系統判斷：${top?top.c.zh:"無法判斷"}（信心${({h:"高",m:"中",l:"低"})[r.conf]}）${top&&top.c.red?"\n⚠ 警訊症狀，已提示看護立即就醫或撥打 119。":""}${r.conf==="l"?"\n已轉藥師人工判讀。":""}\n看護原文：${text}\n（原文請由藥師或母語人員確認）`}
 function selectText(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
 function helpMsg(h){return `【用藥求助】${now()}\n服藥者：王○○ 阿嬤\n看護回報：${h.zh}${h.red?"\n⚠ 此為警訊症狀，已提示看護立即就醫或撥打 119。":""}\n目前用藥：Amlodipine、Metformin、Aspirin`}
 function renderFamily(){
