@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>藥袋說你的語言</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a phone-width dispensing app; the medication card borrows the 早/中/晚/睡前 grid printed on Taiwanese drug bags. */
+:root{
+  --paper:#f6f7f4; --card:#ffffff; --ink:#18231f; --ink2:#55615b; --line:#d9ded8;
+  --rx:#1f6f5c; --rx-soft:#e3efe9; --alert:#b3261e; --alert-soft:#fbe9e7; --amber:#8a5a00; --amber-soft:#fdf1d8;
+  --pill-a:#ffffff; --pill-b:#f3e3b5; --pill-c:#f7d4d1;
+  --f-latin:"Be Vietnam Pro","Noto Sans TC",system-ui,sans-serif;
+  --f-zh:"Noto Sans TC","Be Vietnam Pro",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#111816; --card:#1a2320; --ink:#e7ece9; --ink2:#a5b1ab; --line:#2f3b37;
+  --rx:#5cc2a3; --rx-soft:#1d3a31; --alert:#ff8a80; --alert-soft:#3a1f1d; --amber:#f2c26b; --amber-soft:#3a2f17;
+  --pill-a:#e9ece9; --pill-b:#e0cd95; --pill-c:#e8b9b5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111816; --card:#1a2320; --ink:#e7ece9; --ink2:#a5b1ab; --line:#2f3b37;
+  --rx:#5cc2a3; --rx-soft:#1d3a31; --alert:#ff8a80; --alert-soft:#3a1f1d; --amber:#f2c26b; --amber-soft:#3a2f17;
+  --pill-a:#e9ece9; --pill-b:#e0cd95; --pill-c:#e8b9b5; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-zh);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:22px;margin:0;text-wrap:balance;letter-spacing:.02em}
+.demo{font-size:12.5px;color:var(--amber);background:var(--amber-soft);border-radius:8px;padding:8px 10px}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{flex:1;min-width:0;border:0;background:transparent;color:var(--ink2);font:inherit;font-weight:500;padding:8px 6px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--rx);color:var(--card)}
+.seg.small button{font-size:13.5px;padding:7px 4px}
+button:focus-visible,.chip:focus-visible{outline:2px solid var(--rx);outline-offset:2px}
+.lang{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font:500 13px var(--f-latin);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--rx);background:var(--rx-soft);color:var(--rx)}
+.lat{font-family:var(--f-latin)}
+.who{font-size:13px;color:var(--ink2)}
+.drug{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.dh{display:flex;gap:12px;align-items:center}
+.pill{flex:none;width:52px;height:52px;border-radius:12px;background:var(--rx-soft);display:grid;place-items:center}
+.pill i{display:block;border:1.5px solid var(--ink2)}
+.dn{min-width:0}
+.dn b{font:600 16px var(--f-latin);display:block}
+.dn span{font-family:var(--f-mono);font-size:12px;color:var(--ink2)}
+.purpose{font-size:15.5px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.grid div{text-align:center;padding:6px 2px;font-size:12px;color:var(--ink2);border-left:1px solid var(--line)}
+.grid div:first-child{border-left:0}
+.grid div.on{background:var(--rx);color:var(--card);font-weight:600}
+.grid div b{display:block;font:600 15px var(--f-mono)}
+.meal{font-size:13px;color:var(--rx);font-weight:600}
+.k{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:600;margin-bottom:2px}
+.warn{background:var(--alert-soft);border-radius:10px;padding:10px 12px;color:var(--alert)}
+.warn .k{color:var(--alert)}
+.tip{font-size:13.5px;color:var(--ink2);border-top:1px dashed var(--line);padding-top:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:500 13.5px var(--f-latin);cursor:pointer}
+.btn.pri{background:var(--rx);border-color:var(--rx);color:var(--card)}
+.btn.done{background:var(--rx-soft);border-color:var(--rx-soft);color:var(--rx)}
+.slot{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.slot h3{margin:0;font:600 15px var(--f-latin);display:flex;justify-content:space-between;gap:8px}
+.slot h3 span{font-family:var(--f-mono);color:var(--ink2);font-weight:500}
+.it{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.it .t{min-width:0}
+.it small{display:block;color:var(--ink2);font-size:12px}
+.help{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.help button{text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px;font:500 14px var(--f-latin);cursor:pointer;min-height:56px}
+.help button.red{border-color:var(--alert)}
+.help button[aria-pressed="true"]{background:var(--rx-soft);border-color:var(--rx)}
+.out{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.bubble{background:var(--rx-soft);border-radius:12px 12px 12px 4px;padding:10px 12px;font-size:14px;white-space:pre-line}
+.em{background:var(--alert);color:var(--card);border-radius:10px;padding:10px 12px;font-weight:600}
+.sum{display:flex;align-items:baseline;gap:8px}
+.sum b{font:600 34px var(--f-mono);color:var(--rx)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--rx);border-radius:4px;transition:width .3s}
+.fam li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fam{list-style:none;margin:0;padding:0}
+.st{font-size:12px;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.st.ok{background:var(--rx-soft);color:var(--rx)} .st.wait{background:var(--amber-soft);color:var(--amber)}
+.label{background:var(--card);border:1.5px solid var(--ink);border-radius:6px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.label .t{min-width:0;font-size:13px}
+.label .t b{font-size:15px}
+#qr{background:#fff;padding:6px;border-radius:4px;width:118px;height:118px}
+#qr img,#qr canvas{width:106px!important;height:106px!important}
+.note{font-size:12.5px;color:var(--ink2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <h1>藥袋說你的語言</h1>
+    <div class="demo">原型示範：病人、藥局皆為虛構；外文內容尚未經母語醫療譯者審訂，不可作為實際用藥依據。</div>
+  </header>
+
+  <div class="seg" role="group" aria-label="切換角色">
+    <button id="r-caregiver" data-role="caregiver" aria-pressed="true">看護端</button>
+    <button id="r-family" data-role="family" aria-pressed="false">家屬端</button>
+    <button id="r-pharm" data-role="pharm" aria-pressed="false">藥師端</button>
+  </div>
+
+  <!-- 看護端 -->
+  <section id="v-caregiver" class="wrap" style="gap:12px">
+    <div class="lang" role="group" aria-label="Language">
+      <button class="chip" id="l-id" data-lang="id" aria-pressed="true">Bahasa Indonesia</button>
+      <button class="chip" id="l-vi" data-lang="vi" aria-pressed="false">Tiếng Việt</button>
+      <button class="chip" id="l-zh" data-lang="zh" aria-pressed="false">中文</button>
+    </div>
+    <div class="who lat" id="who"></div>
+    <div class="seg small" role="group" aria-label="功能">
+      <button id="t-card" data-tab="card" aria-pressed="true"></button>
+      <button id="t-sched" data-tab="sched" aria-pressed="false"></button>
+      <button id="t-help" data-tab="help" aria-pressed="false"></button>
+    </div>
+    <div id="p-card" class="wrap" style="gap:12px"></div>
+    <div id="p-sched" class="wrap" style="gap:12px" hidden></div>
+    <div id="p-help" class="wrap" style="gap:12px" hidden></div>
+  </section>
+
+  <!-- 家屬端 -->
+  <section id="v-family" class="wrap" style="gap:12px" hidden>
+    <div class="card">
+      <div class="k">今日服藥進度・王○○ 阿嬤</div>
+      <div class="sum"><b id="f-n">0/4</b><span class="note">次給藥已完成</span></div>
+      <div class="bar"><i id="f-bar" style="width:0%"></i></div>
+      <ul class="fam" id="f-list"></ul>
+      <div class="note">看護在看護端按下確認後，這裡會即時更新。</div>
+    </div>
+    <div class="card">
+      <div class="k">看護回報</div>
+      <div id="f-alerts" class="note">目前沒有回報。可到看護端的求助頁試試。</div>
+    </div>
+    <div class="card">
+      <div class="k">LINE 每日摘要預覽（晚上 9 點）</div>
+      <div class="bubble" id="f-line"></div>
+    </div>
+  </section>
+
+  <!-- 藥師端 -->
+  <section id="v-pharm" class="wrap" style="gap:12px" hidden>
+    <div class="card">
+      <div class="k">調劑時加貼的標籤</div>
+      <div class="note">藥師在交付藥品前選擇看護的語言，系統印出這張貼紙，貼在藥袋上。</div>
+      <div class="lang" role="group" aria-label="標籤語言">
+        <button class="chip" id="pl-id" data-plang="id" aria-pressed="true">印尼文</button>
+        <button class="chip" id="pl-vi" data-plang="vi" aria-pressed="false">越南文</button>
+      </div>
+    </div>
+    <div class="label">
+      <div class="t">
+        <b class="lat" id="lab-h"></b><br>
+        <span class="lat" id="lab-s"></span><br>
+        <span style="font-family:var(--f-mono);font-size:12px">示範藥局・3 項藥品・28 天</span>
+      </div>
+      <div id="qr" aria-label="掃描開啟看護端"></div>
+    </div>
+    <div class="note">掃描 QR Code 會開啟看護端畫面。正式版的 QR Code 只連到藥品資訊與一次性憑證，不含姓名或病歷。</div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const SHARE_URL = "";  // 空字串＝使用目前網址
+const T = {
+  id:{who:"Untuk: Nenek Wang ○○ · 3 obat",tabs:["Obat","Jadwal hari ini","Bantuan"],
+      times:["Pagi","Siang","Malam","Sblm tidur"],after:"Sesudah makan",side:"Efek samping umum",warn:"Segera hubungi jika ada",tip:"Catatan",
+      read:"Dengarkan",given:"Sudah diberikan",givenAt:"Diberikan",helpQ:"Apa yang terjadi?",sent:"Pesan ini dikirim ke keluarga & apotek dalam bahasa Mandarin:",
+      copy:"Salin pesan",copied:"Tersalin",em:"Bahaya! Segera bawa ke rumah sakit atau telepon 119.",noVoice:"Suara bahasa ini tidak tersedia di perangkat ini."},
+  vi:{who:"Cho: Bà Vương ○○ · 3 loại thuốc",tabs:["Thuốc","Lịch hôm nay","Trợ giúp"],
+      times:["Sáng","Trưa","Tối","Trước ngủ"],after:"Sau ăn",side:"Tác dụng phụ thường gặp",warn:"Liên hệ ngay nếu có",tip:"Lưu ý",
+      read:"Nghe đọc",given:"Đã cho uống",givenAt:"Đã cho",helpQ:"Có chuyện gì?",sent:"Tin nhắn này được gửi cho gia đình & nhà thuốc bằng tiếng Trung:",
+      copy:"Sao chép",copied:"Đã chép",em:"Nguy hiểm! Đưa đi bệnh viện ngay hoặc gọi 119.",noVoice:"Thiết bị này không có giọng đọc cho ngôn ngữ này."},
+  zh:{who:"服藥者：王○○ 阿嬤・共 3 種藥",tabs:["用藥卡","今日給藥","求助"],
+      times:["早上","中午","晚上","睡前"],after:"飯後",side:"常見副作用",warn:"出現以下情況請立即聯絡",tip:"注意事項",
+      read:"朗讀",given:"已給藥",givenAt:"已給藥",helpQ:"發生什麼事？",sent:"系統會以中文傳給家屬與藥局：",
+      copy:"複製訊息",copied:"已複製",em:"危險！請立刻就醫或撥打 119。",noVoice:"此裝置沒有這個語言的語音。"}
+};
+const DRUGS = [
+  {id:"aml",name:"Amlodipine",dose:"5 mg・1 tablet",zh:"脈優類降血壓藥",slots:[1,0,0,0],pill:{w:22,h:22,r:"50%",c:"--pill-a"},
+   id_:{p:"Obat penurun tekanan darah",s:"Bengkak di pergelangan kaki, sakit kepala, wajah terasa panas, pusing.",w:"Pusing berat sampai tidak bisa berdiri atau pingsan; nyeri dada.",t:"Bantu bangun dari duduk atau tidur pelan-pelan. Jangan berhenti memberi obat tanpa tanya dokter atau apoteker."},
+   vi_:{p:"Thuốc hạ huyết áp",s:"Sưng mắt cá chân, đau đầu, đỏ bừng mặt, chóng mặt.",w:"Chóng mặt nặng đến mức không đứng vững hoặc ngất; đau ngực.",t:"Đỡ ông bà đứng dậy từ từ. Không tự ý ngừng thuốc khi chưa hỏi bác sĩ hoặc dược sĩ."},
+   zh_:{p:"降血壓",s:"腳踝水腫、頭痛、臉潮紅、頭暈。",w:"頭暈到站不穩或昏倒；胸痛。",t:"扶長輩起身要慢。未經醫師或藥師同意，不要自行停藥。"}},
+  {id:"met",name:"Metformin",dose:"500 mg・1 tablet",zh:"降血糖藥",slots:[1,0,1,0],pill:{w:30,h:14,r:"8px",c:"--pill-a"},
+   id_:{p:"Obat penurun gula darah",s:"Perut tidak enak, mual, diare.",w:"Muntah atau diare berat dan tidak bisa makan; napas cepat dan sangat lemas.",t:"Kalau Nenek tidak mau makan, tanya apoteker dulu sebelum memberi obat ini."},
+   vi_:{p:"Thuốc hạ đường huyết",s:"Khó chịu ở bụng, buồn nôn, tiêu chảy.",w:"Nôn hoặc tiêu chảy nặng, không ăn được; thở nhanh và rất mệt.",t:"Nếu bà không ăn được, hãy hỏi dược sĩ trước khi cho uống thuốc này."},
+   zh_:{p:"降血糖",s:"腸胃不適、噁心、腹瀉。",w:"嚴重嘔吐或腹瀉、無法進食；呼吸急促且極度虛弱。",t:"長輩吃不下飯時，先問藥師是否照常給這顆藥。"}},
+  {id:"asp",name:"Aspirin",dose:"100 mg・1 tablet",zh:"抗血小板藥",slots:[1,0,0,0],pill:{w:18,h:18,r:"50%",c:"--pill-c"},
+   id_:{p:"Obat pengencer darah, mencegah penggumpalan darah",s:"Perut perih, mudah memar.",w:"BAB hitam atau berdarah; muntah darah atau muntah berwarna seperti kopi; darah tidak berhenti.",t:"Jangan memberi obat nyeri atau obat lain tanpa tanya apoteker."},
+   vi_:{p:"Thuốc làm loãng máu, ngừa cục máu đông",s:"Đau dạ dày, dễ bầm tím.",w:"Đi ngoài phân đen hoặc có máu; nôn ra máu hoặc chất màu bã cà phê; chảy máu không cầm.",t:"Không tự cho uống thêm thuốc giảm đau hay thuốc khác khi chưa hỏi dược sĩ."},
+   zh_:{p:"預防血栓",s:"胃部不適、容易瘀青。",w:"解黑便或血便；吐血或吐出咖啡色物；流血不止。",t:"不要自行加給止痛藥或其他藥物，先問藥師。"}}
+];
+const SCHED = [
+  {key:"m-aml",time:"08:00",slot:0,drug:"aml"},{key:"m-met",time:"08:00",slot:0,drug:"met"},
+  {key:"m-asp",time:"08:00",slot:0,drug:"asp"},{key:"e-met",time:"19:00",slot:2,drug:"met"}
+];
+const HELP = [
+  {k:"vomit",zh:"嘔吐",id:"Muntah",vi:"Nôn ói"},
+  {k:"diarr",zh:"腹瀉",id:"Diare",vi:"Tiêu chảy"},
+  {k:"dizzy",zh:"頭暈",id:"Pusing",vi:"Chóng mặt"},
+  {k:"black",zh:"解黑便或血便",id:"BAB hitam / berdarah",vi:"Phân đen / có máu",red:1},
+  {k:"fall",zh:"跌倒",id:"Jatuh",vi:"Bị ngã",red:1},
+  {k:"extra",zh:"不小心多給了一顆",id:"Terlanjur memberi 1 tablet lebih",vi:"Lỡ cho uống thêm 1 viên"},
+  {k:"miss",zh:"忘記給藥",id:"Lupa memberi obat",vi:"Quên cho uống thuốc"},
+  {k:"refuse",zh:"長輩不肯吃藥",id:"Nenek tidak mau minum obat",vi:"Bà không chịu uống thuốc"},
+  {k:"out",zh:"藥快吃完了",id:"Obat hampir habis",vi:"Thuốc sắp hết"}
+];
+const S = {role:"caregiver",lang:"id",tab:"card",given:{},alerts:[],help:null,plang:"id"};
+try{const l=localStorage.getItem("pl-lang"); if(l&&T[l]) S.lang=l;}catch(e){}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const now=()=>new Date().toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit",hour12:false});
+const drug=id=>DRUGS.find(d=>d.id===id);
+const L=d=>d[S.lang+"_"];
+
+function press(sel,attr,val){document.querySelectorAll(sel).forEach(b=>b.setAttribute("aria-pressed",String(b.dataset[attr]===val)))}
+
+function renderCards(){
+  const t=T[S.lang];
+  $("p-card").innerHTML=DRUGS.map(d=>{const x=L(d);return `
+  <article class="drug">
+    <div class="dh">
+      <div class="pill" aria-hidden="true"><i style="width:${d.pill.w}px;height:${d.pill.h}px;border-radius:${d.pill.r};background:var(${d.pill.c})"></i></div>
+      <div class="dn"><b>${d.name}</b><span>${d.dose}</span></div>
+    </div>
+    <div class="purpose lat">${esc(x.p)}</div>
+    <div class="grid lat">${t.times.map((n,i)=>`<div class="${d.slots[i]?"on":""}">${esc(n)}<b>${d.slots[i]?"1":"–"}</b></div>`).join("")}</div>
+    <div class="meal lat">${esc(t.after)}</div>
+    <div><div class="k lat">${esc(t.side)}</div><div class="lat">${esc(x.s)}</div></div>
+    <div class="warn"><div class="k lat">${esc(t.warn)}</div><div class="lat">${esc(x.w)}</div></div>
+    <div class="tip lat"><b>${esc(t.tip)}：</b>${esc(x.t)}</div>
+    <div class="row"><button class="btn" data-say="${d.id}">${esc(t.read)}</button><span class="note lat" id="say-${d.id}"></span></div>
+  </article>`}).join("");
+  $("p-card").querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say));
+}
+function speak(id){
+  const d=drug(id),x=L(d),t=T[S.lang];const code={id:"id-ID",vi:"vi-VN",zh:"zh-TW"}[S.lang];
+  const msg=$("say-"+id);
+  try{
+    const ss=window.speechSynthesis; if(!ss) throw 0;
+    const voices=ss.getVoices(); const ok=voices.length===0||voices.some(v=>v.lang&&v.lang.toLowerCase().startsWith(code.slice(0,2)));
+    if(!ok){msg.textContent=t.noVoice;return}
+    ss.cancel(); const u=new SpeechSynthesisUtterance([d.name,x.p,x.t,t.warn,x.w].join(". ")); u.lang=code; ss.speak(u); msg.textContent="";
+  }catch(e){msg.textContent=t.noVoice}
+}
+function renderSched(){
+  const t=T[S.lang];
+  const groups=[...new Set(SCHED.map(s=>s.time))];
+  $("p-sched").innerHTML=groups.map(tm=>{const items=SCHED.filter(s=>s.time===tm);return `
+    <div class="slot"><h3><span class="lat">${esc(t.times[items[0].slot])} · ${esc(t.after)}</span><span>${tm}</span></h3>
+    ${items.map(s=>{const d=drug(s.drug),g=S.given[s.key];return `<div class="it"><div class="t"><b class="lat">${d.name}</b><small class="lat">${esc(L(d).p)}</small></div>
+      <button class="btn ${g?"done":"pri"}" data-give="${s.key}">${g?esc(t.givenAt)+" "+g:esc(t.given)}</button></div>`}).join("")}</div>`}).join("");
+  $("p-sched").querySelectorAll("[data-give]").forEach(b=>b.onclick=()=>{const k=b.dataset.give;S.given[k]=S.given[k]?undefined:now();if(!S.given[k])delete S.given[k];renderSched();renderFamily()});
+}
+function renderHelp(){
+  const t=T[S.lang];
+  const lab=h=>S.lang==="zh"?h.zh:h[S.lang];
+  let out="";
+  if(S.help){const h=HELP.find(x=>x.k===S.help);const m=helpMsg(h);
+    out=`<div class="out" aria-live="polite">${h.red?`<div class="em lat">${esc(t.em)}</div>`:""}
+      <div class="note lat">${esc(t.sent)}</div><div class="bubble" id="h-msg">${esc(m)}</div>
+      <div class="row"><button class="btn pri" id="h-copy">${esc(t.copy)}</button></div>
+      <div class="note">示範藥局電話：02-0000-0000（虛構）</div></div>`;}
+  $("p-help").innerHTML=`<div class="k lat">${esc(t.helpQ)}</div><div class="help">${HELP.map(h=>`<button class="${h.red?"red":""}" data-help="${h.k}" aria-pressed="${S.help===h.k}">${esc(lab(h))}</button>`).join("")}</div>${out}`;
+  $("p-help").querySelectorAll("[data-help]").forEach(b=>b.onclick=()=>{S.help=b.dataset.help;const h=HELP.find(x=>x.k===S.help);S.alerts.unshift({t:now(),h});renderHelp();renderFamily()});
+  const c=$("h-copy"); if(c) c.onclick=()=>{const txt=$("h-msg").textContent;
+    const done=()=>{c.textContent=T[S.lang].copied};
+    try{navigator.clipboard.writeText(txt).then(done,()=>selectText($("h-msg")))}catch(e){selectText($("h-msg"))}};
+}
+function selectText(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+function helpMsg(h){return `【用藥求助】${now()}\n服藥者：王○○ 阿嬤\n看護回報：${h.zh}${h.red?"\n⚠ 此為警訊症狀，已提示看護立即就醫或撥打 119。":""}\n目前用藥：Amlodipine、Metformin、Aspirin`}
+function renderFamily(){
+  const done=SCHED.filter(s=>S.given[s.key]).length;
+  $("f-n").textContent=`${done}/${SCHED.length}`; $("f-bar").style.width=`${done/SCHED.length*100}%`;
+  $("f-list").innerHTML=SCHED.map(s=>{const g=S.given[s.key];return `<li><span>${s.time}　${drug(s.drug).name}（${drug(s.drug).zh_.p}）</span><span class="st ${g?"ok":"wait"}">${g?"已給 "+g:"待給藥"}</span></li>`}).join("");
+  $("f-alerts").innerHTML=S.alerts.length?S.alerts.slice(0,4).map(a=>`<div style="color:${a.h.red?"var(--alert)":"var(--ink)"}">${a.t}　${esc(a.h.zh)}${a.h.red?"（警訊）":""}</div>`).join(""):"目前沒有回報。可到看護端的求助頁試試。";
+  const miss=SCHED.filter(s=>!S.given[s.key]).map(s=>`${s.time} ${drug(s.drug).name}`);
+  $("f-line").textContent=`王○○ 阿嬤今日用藥摘要\n已完成 ${done}/${SCHED.length} 次給藥${miss.length?`\n尚未確認：${miss.join("、")}`:"\n全部按時完成"}\n看護回報 ${S.alerts.length} 則${S.alerts.some(a=>a.h.red)?"，含警訊，請盡快聯絡":""}`;
+}
+function renderCaregiver(){
+  const t=T[S.lang];$("who").textContent=t.who;
+  ["card","sched","help"].forEach((k,i)=>{$("t-"+k).textContent=t.tabs[i];$("p-"+k).hidden=S.tab!==k});
+  press("[data-tab]","tab",S.tab);press("[data-lang]","lang",S.lang);
+  renderCards();renderSched();renderHelp();
+}
+let qr=null;
+function renderPharm(){
+  press("[data-plang]","plang",S.plang);
+  const t=T[S.plang];
+  $("lab-h").textContent=S.plang==="id"?"Pindai untuk info obat":"Quét để xem thông tin thuốc";
+  $("lab-s").textContent=S.plang==="id"?"Bahasa Indonesia · Nenek Wang ○○":"Tiếng Việt · Bà Vương ○○";
+  const url=(SHARE_URL||location.href.split("#")[0])+"#"+S.plang;
+  try{$("qr").innerHTML="";qr=new QRCode($("qr"),{text:url,width:106,height:106,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M})}catch(e){$("qr").textContent="QR"}
+}
+function setRole(r){S.role=r;press("[data-role]","role",r);["caregiver","family","pharm"].forEach(k=>$("v-"+k).hidden=k!==r);if(r==="pharm")renderPharm();if(r==="family")renderFamily()}
+document.querySelectorAll("[data-role]").forEach(b=>b.onclick=()=>setRole(b.dataset.role));
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;renderCaregiver()});
+document.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{S.lang=b.dataset.lang;try{localStorage.setItem("pl-lang",S.lang)}catch(e){};renderCaregiver()});
+document.querySelectorAll("[data-plang]").forEach(b=>b.onclick=()=>{S.plang=b.dataset.plang;renderPharm()});
+const h=(location.hash||"").slice(1);
+if(h==="id"||h==="vi"){S.lang=h} else if(h==="family"||h==="pharm"){S.role=h}
+renderCaregiver();renderFamily();setRole(S.role);
+</script>
+
+</body>
+</html>
